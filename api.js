@@ -5,7 +5,7 @@
 
 (function (global) {
   // CONFIGURAÇÃO DA URL DA API (Sempre use a URL da implementação MAIS RECENTE)
-  const API_URL = "https://script.google.com/macros/s/AKfycby5uc_kNB_oGOO7ydctorkaWfsEljjXFZM3zq8MW6rYPW4mSthLfPoIPrOKGZ6E6rJBmw/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbyrhIsHgV1sQj2yMaFcb1SOl1FydAC0oay23djmAUnERwVjph6pTi3GQif9JNjf_tRCpw/exec";
 
   /**
    * Função interna para realizar chamadas JSONP.
