@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Frota Pro — Registrar Entrada</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{ 
+      --bg1:#061427; --bg2:#0b1b33; 
+      --card:rgba(255,255,255,0.06); 
+      --border:rgba(255,255,255,0.12); 
+      --shadow:0 16px 40px rgba(0,0,0,.45); 
+      --radius:20px; 
+      --text-main:#e6edf7; --text-soft:#9fb4d3; --text-muted:#7b8ca7; 
+      --green:#22c55e; --red:#ef4444; --blue:#3b82f6;
+    }
+    *{box-sizing:border-box}
+    body{ 
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; 
+      background:linear-gradient(180deg,var(--bg1),var(--bg2)); 
+      color:var(--text-main); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; 
+    }
+    .card{ width:100%; max-width:440px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:30px; backdrop-filter:blur(10px); box-shadow:var(--shadow); position:relative; overflow:hidden; }
+    .header{ text-align:center; margin-bottom:25px }
+    .header h2{ margin:0; font-size:24px; font-weight:800; letter-spacing:-0.5px; color:var(--green) }
+    .header p{ margin:5px 0 0; font-size:11px; color:var(--text-soft); text-transform:uppercase; letter-spacing:2px; font-weight:600 }
+    .field{ margin-bottom:18px }
+    label{ display:block; font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px }
+    .input-group{ position:relative }
+    .input-group i{ position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--green); font-size:14px; pointer-events:none }
+    select, input{ 
+      width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border); padding:13px 13px 13px 40px; border-radius:12px; color:#fff; font-size:15px; outline:none; transition:0.2s;
+    }
+    select:focus, input:focus{ border-color:var(--green); background:rgba(255,255,255,0.05) }
+    .km-hint{ 
+      font-size:16px; 
+      color:var(--red); 
+      font-weight:700;
+      margin-top:6px; 
+      display:block; 
+      padding-left:2px;
+      text-align: right;
+    }
+    .km-hint b{ color:var(--red) }
+    .btn-save{ width:100%; padding:16px; background:var(--green); color:#fff; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; margin-top:10px; transition:0.3s; }
+    .btn-save:disabled{ opacity:0.15; cursor:not-allowed; filter:grayscale(1) }
+    .btn-back{ display:block; text-align:center; margin-top:20px; color:var(--text-soft); text-decoration:none; font-size:13px; font-weight:500; transition:0.2s }
+    #msg{ text-align:center; margin-top:15px; font-size:13px; font-weight:600; min-height:1.5em }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <h2>Registrar Entrada</h2>
+    <p>Delta Biocombustíveis</p>
+  </div>
+
+  <div class="field">
+    <label>Veículo em Trânsito</label>
+    <div class="input-group">
+      <i class="fa-solid fa-car-side"></i>
+      <select id="veiculo" onchange="onChangeVeiculo()">
+        <option value="">Carregando...</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>KM de Retorno</label>
+    <div class="input-group">
+      <i class="fa-solid fa-gauge-high"></i>
+      <input type="number" id="kmRetorno" placeholder="0" oninput="validateForm()">
+    </div>
+    <span class="km-hint" id="hintKm">Selecione o veículo acima</span>
+  </div>
+
+  <div class="field">
+    <label>Motorista</label>
+    <div class="input-group">
+      <i class="fa-solid fa-user-tie"></i>
+      <select id="motorista" onchange="validateForm()">
+        <option value="">Aguardando...</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Segurança</label>
+    <div class="input-group">
+      <i class="fa-solid fa-shield-halved"></i>
+      <select id="seguranca" onchange="validateForm()">
+        <option value="">Aguardando...</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn-save" id="btnSalvar" disabled onclick="doEnviar()">GRAVAR ENTRADA</button>
+  <a href="veiculos.html" class="btn-back">← VOLTAR AO MENU</a>
+  <div id="msg"></div>
+</div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycby5uc_kNB_oGOO7ydctorkaWfsEljjXFZM3zq8MW6rYPW4mSthLfPoIPrOKGZ6E6rJBmw/exec';
+
+  let KM_ANTERIOR = 0;
+  let inFlight = false;
+  let VEICULOS_NA_RUA = [];
+
+  function jsonp(url){
+    return new Promise((resolve, reject) => {
+      const cb = 'cb_' + Math.random().toString(36).slice(2);
+      window[cb] = (data) => {
+        try { resolve(data); }
+        finally {
+          delete window[cb];
+          script.remove();
+        }
+      };
+      const script = document.createElement('script');
+      script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb + '&_ts=' + Date.now();
+      script.onerror = () => {
+        delete window[cb];
+        script.remove();
+        reject(new Error('Falha na requisição JSONP'));
+      };
+      document.body.appendChild(script);
+    });
+  }
+
+  function apiGet(route, params = {}) {
+    const qs = new URLSearchParams({ route, ...params }).toString();
+    return jsonp(`${API_URL}?${qs}`);
+  }
+
+  function preencher(el, lista, placeholder) {
+    el.innerHTML = `<option value="">${placeholder}</option>` +
+      (lista || []).map(i => `<option value="${String(i).replace(/"/g, '&quot;')}">${i}</option>`).join('');
+  }
+
+  function setMsg(text, colorVar) {
+    const msg = document.getElementById('msg');
+    msg.style.color = colorVar ? `var(${colorVar})` : '';
+    msg.innerText = text || '';
+  }
+
+  async function init() {
+    try {
+      const L = await apiGet('listsAvail');
+      const selV = document.getElementById('veiculo');
+      VEICULOS_NA_RUA = Array.isArray(L.veiculosNaRua) ? L.veiculosNaRua : [];
+
+      selV.innerHTML = '<option value="">Selecione o veículo...</option>' +
+        VEICULOS_NA_RUA.map(item => `<option value="${String(item.veiculo).replace(/"/g, '&quot;')}">${item.veiculo}</option>`).join('');
+
+      preencher(document.getElementById('motorista'), L.motoristas, 'Selecione...');
+      preencher(document.getElementById('seguranca'), L.segurancas, 'Selecione...');
+      setMsg('');
+    } catch (e) {
+      setMsg('Erro ao carregar dados.', '--red');
+    }
+  }
+
+  async function onChangeVeiculo() {
+    const vSel = document.getElementById('veiculo').value;
+    const hint = document.getElementById('hintKm');
+    const motoristaEl = document.getElementById('motorista');
+    const segurancaEl = document.getElementById('seguranca');
+
+    if (!vSel) {
+      KM_ANTERIOR = 0;
+      hint.innerText = 'Selecione o veículo acima';
+      motoristaEl.value = '';
+      segurancaEl.value = '';
+      validateForm();
+      return;
+    }
+
+    const registro = VEICULOS_NA_RUA.find(x => String(x.veiculo) === String(vSel));
+    if (registro) {
+      if (registro.motorista) motoristaEl.value = registro.motorista;
+      if (registro.seguranca) segurancaEl.value = registro.seguranca;
+      if (registro.kmSaida !== undefined && registro.kmSaida !== null && String(registro.kmSaida) !== '') {
+        KM_ANTERIOR = Number(String(registro.kmSaida).toString().replace(',', '.')) || 0;
+        hint.innerHTML = `KM de saída: <b>${KM_ANTERIOR}</b>`;
+        validateForm();
+        return;
+      }
+    }
+
+    hint.innerHTML = '🔍 Buscando último KM...';
+    try {
+      const st = await apiGet('kmAtual', { veiculo: vSel });
+      KM_ANTERIOR = Number(st.km || 0);
+      hint.innerHTML = `Último KM: <b>${KM_ANTERIOR}</b>`;
+    } catch (e) {
+      KM_ANTERIOR = 0;
+      hint.innerText = 'Erro ao buscar KM.';
+    }
+    validateForm();
+  }
+
+  function validateForm() {
+    const v = document.getElementById('veiculo').value;
+    const k = document.getElementById('kmRetorno').value;
+    const m = document.getElementById('motorista').value;
+    const s = document.getElementById('seguranca').value;
+    const btn = document.getElementById('btnSalvar');
+
+    const ok = !!(v && k && m && s);
+    const kmOk = Number(k || 0) >= KM_ANTERIOR;
+
+    if (ok && !kmOk) {
+      setMsg('KM inferior ao de saída!', '--red');
+      btn.disabled = true;
+    } else {
+      if (document.getElementById('msg').innerText === 'KM inferior ao de saída!') setMsg('');
+      btn.disabled = !ok || !kmOk || inFlight;
+    }
+  }
+
+  async function doEnviar() {
+    if (inFlight) return;
+    inFlight = true;
+
+    const btn = document.getElementById('btnSalvar');
+    btn.disabled = true;
+    setMsg('Gravando entrada...', '--text-soft');
+
+    const payload = {
+      veiculo: document.getElementById('veiculo').value,
+      KmRetorno: Number(document.getElementById('kmRetorno').value),
+      motorista: document.getElementById('motorista').value,
+      seguranca: document.getElementById('seguranca').value
+    };
+
+    try {
+      const res = await apiGet('entrada', payload);
+      if (!res || res.ok === false) {
+        throw new Error((res && res.message) || 'Erro ao salvar');
+      }
+      setMsg('✅ Gravado com sucesso!', '--green');
+      setTimeout(() => { location.href = 'veiculos.html'; }, 1200);
+    } catch (e) {
+      setMsg((e && e.message) ? e.message : 'Erro ao salvar.', '--red');
+      inFlight = false;
+      validateForm();
+    }
+  }
+
+  window.onload = init;
+</script>
+</body>
+</html>

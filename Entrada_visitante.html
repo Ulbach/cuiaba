@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Entrada Visitante — Delta</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{ --bg1:#061427; --bg2:#0b1b33; --card:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.12); --radius:20px; --text-main:#e6edf7; --text-soft:#9fb4d3; --text-muted:#7b8ca7; --green:#22c55e; --blue:#3b82f6; }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:system-ui,-apple-system,Arial; background:linear-gradient(180deg,var(--bg1),var(--bg2)); color:var(--text-main); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .card{ width:100%; max-width:440px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:30px; backdrop-filter:blur(10px); box-shadow:0 16px 40px rgba(0,0,0,.45); }
+    .header{ text-align:center; margin-bottom:25px }
+    .header h2{ margin:0; font-size:24px; font-weight:800; color:var(--blue) }
+    .header p{ margin:5px 0 0; font-size:11px; color:var(--text-soft); text-transform:uppercase; letter-spacing:2px; }
+    .field{ margin-bottom:18px }
+    label{ display:block; font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; }
+    .input-group{ position:relative }
+    .input-group i{ position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--blue); font-size:14px; pointer-events:none }
+    input, select{ width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border); padding:13px 13px 13px 40px; border-radius:12px; color:#fff; font-size:15px; outline:none; transition:0.2s; }
+    input:focus, select:focus{ border-color:var(--blue); background:rgba(255,255,255,0.05) }
+    .btn-save{ width:100%; padding:16px; background:var(--green); color:#fff; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; margin-top:10px; }
+    .btn-back{ display:block; text-align:center; margin-top:20px; color:var(--text-soft); text-decoration:none; font-size:13px; }
+    #msg{ text-align:center; margin-top:15px; font-size:13px; font-weight:600; min-height:1.5em; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="header"><h2>Novo Visitante</h2><p>Delta Biocombustíveis</p></div>
+  <div class="field"><label>CPF</label><div class="input-group"><i class="fa-solid fa-address-card"></i>
+    <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)" onblur="buscarVisitante()">
+  </div></div>
+  <div class="field"><label>Nome Completo</label><div class="input-group"><i class="fa-solid fa-user"></i>
+    <input type="text" id="nome" placeholder="Nome do visitante">
+  </div></div>
+  <div class="field"><label>Telefone</label><div class="input-group"><i class="fa-solid fa-phone"></i>
+    <input type="text" id="telefone" placeholder="(00) 00000-0000" maxlength="15" oninput="mascaraTel(this)">
+  </div></div>
+  <div class="field"><label>Responsável / Área</label><div class="input-group"><i class="fa-solid fa-building-user"></i>
+    <select id="responsavel"><option value="">Carregando...</option></select>
+  </div></div>
+  <button class="btn-save" id="btnSalvar" onclick="salvar()">REGISTRAR ENTRADA</button>
+  <a href="visitantes.html" class="btn-back">← VOLTAR</a>
+  <div id="msg"></div>
+</div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycby5uc_kNB_oGOO7ydctorkaWfsEljjXFZM3zq8MW6rYPW4mSthLfPoIPrOKGZ6E6rJBmw/exec';
+  let historico = [];
+  let enviando = false;
+
+  function mascaraCPF(i) {
+    let v = i.value.replace(/\D/g, "");
+    v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    i.value = v;
+  }
+  function mascaraTel(i) {
+    let v = i.value.replace(/\D/g, "");
+    v = v.replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d)(\d{4})$/, "$1-$2");
+    i.value = v;
+  }
+  function jsonp(url) {
+    return new Promise((resolve) => {
+      const cb = 'cb_' + Math.round(100000 * Math.random());
+      const script = document.createElement('script');
+      script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + cb;
+      window[cb] = (data) => { delete window[cb]; document.body.removeChild(script); resolve(data); };
+      document.body.appendChild(script);
+    });
+  }
+
+  async function init() {
+    try {
+      const res = await jsonp(API_URL + '?route=getVisitantesData');
+      historico = res.visitantes || [];
+      document.getElementById('responsavel').innerHTML = '<option value="">Selecione...</option>' + 
+        (res.responsaveis || []).map(r => `<option value="${r}">${r}</option>`).join('');
+    } catch(e) { document.getElementById('msg').innerText = "Erro na conexão."; }
+  }
+
+  function buscarVisitante() {
+    const cpfDigitado = document.getElementById('cpf').value.replace(/\D/g, "");
+    if (cpfDigitado.length < 11) return;
+    
+    // CORREÇÃO: Compara limpando CPF da planilha também
+    const achado = historico.find(v => v.cpf.replace(/\D/g, "") === cpfDigitado);
+    
+    if (achado) {
+      document.getElementById('nome').value = achado.nome;
+      document.getElementById('telefone').value = achado.telefone || "";
+      mascaraTel(document.getElementById('telefone'));
+      document.getElementById('msg').style.color = "var(--blue)";
+      document.getElementById('msg').innerText = "Visitante identificado!";
+    }
+  }
+
+  async function salvar() {
+    if(enviando) return;
+    const d = { cpf: document.getElementById('cpf').value, nome: document.getElementById('nome').value, 
+                telefone: document.getElementById('telefone').value, responsavel: document.getElementById('responsavel').value };
+    if(!d.cpf || !d.nome || !d.responsavel) return alert("Preencha todos os campos!");
+    enviando = true; document.getElementById('btnSalvar').disabled = true;
+    document.getElementById('msg').innerText = "Gravando...";
+    try {
+      await jsonp(API_URL + '?route=salvarVisitante&data=' + encodeURIComponent(JSON.stringify(d)));
+      document.getElementById('msg').style.color = "var(--green)";
+      document.getElementById('msg').innerText = "✅ REGISTRADO!";
+      setTimeout(() => location.href = "visitantes.html", 1500);
+    } catch(e) { setTimeout(() => location.href = "visitantes.html", 1000); }
+  }
+  window.onload = init;
+</script>
+</body>
+</html>

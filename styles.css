@@ -1,0 +1,15 @@
+/* styles.css — layout simples para validar integração */
+:root{ --bg:#0f172a; --fg:#e2e8f0; --muted:#94a3b8; --ok:#16a34a; --warn:#f59e0b; --card:#111827; --accent:#3b82f6; }
+*{ box-sizing:border-box; }
+body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:var(--bg); color:var(--fg); }
+header{ padding:16px 24px; background:#0b1220; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #1f2937; }
+h1{ font-size:20px; margin:0; }
+#status{ font-size:14px; color:var(--muted); }
+main.grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; padding:16px; }
+section{ background:var(--card); border:1px solid #1f2937; border-radius:12px; padding:12px; }
+section.wide{ grid-column: 1 / -1; }
+.kpi{ font-size:40px; font-weight:700; color:var(--accent); }
+ul{ margin:0; padding-left:18px; }
+.tbl{ width:100%; border-collapse:collapse; }
+.tbl th, .tbl td{ border-bottom:1px solid #1f2937; padding:6px 8px; text-align:left; font-size:14px; }
+tr.warn td{ color: var(--warn); }

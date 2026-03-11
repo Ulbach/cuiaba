@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Gestão Delta — Portal</title>
+  <style>
+    :root{ --bg1:#0b1220; --bg2:#0b0f17; --card:#0b1221; --border:#1d2940;
+      --text:#e6edf7; --muted:#9fb0cc; --shadow:0 24px 64px rgba(0,0,0,.45); }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+      background:
+        radial-gradient(900px 360px at -10% -10%, #22c55e1f 0%, transparent 60%),
+        radial-gradient(900px 360px at 120% -20%, #06b6d41f 0%, transparent 60%),
+        linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+      color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      display:flex; align-items:center; justify-content:center; padding:16px;
+    }
+    .wrap{ width:100%; max-width:440px; animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+    
+    .head{ text-align:center; margin-bottom:40px; }
+    .chip{ display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border-radius:99px; 
+      border:1px solid #1d2940; background:rgba(255,255,255,0.03); font-size:11px; font-weight:700; 
+      letter-spacing:1px; color:var(--muted); transition:0.3s; }
+    .logo{ margin:24px 0 0; font-size:42px; font-weight:900; letter-spacing:-2px; font-style:italic; line-height:1; }
+    .logo span{ display:block; color:#ff4d4d; margin-top:-4px; }
+    .tagline{ margin-top:16px; font-size:10px; font-weight:700; letter-spacing:4px; color:var(--muted); opacity:0.6; }
+
+    .grid{ display:flex; flex-direction:column; gap:16px; margin-top:40px; }
+    .card-btn{ 
+      display:block; text-decoration:none; color:inherit; background:var(--card); 
+      border:1px solid var(--border); border-radius:24px; padding:20px; 
+      transition:0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:var(--shadow); position:relative; overflow:hidden;
+    }
+    .card-btn:active{ transform:scale(0.98); opacity:0.9; }
+    .card-btn::before{ content:''; position:absolute; top:0; left:0; width:100%; height:100%; 
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent); 
+      transform:translateX(-100%); transition:0.5s; }
+    .card-btn:hover::before{ transform:translateX(100%); }
+
+    .inner{ display:flex; align-items:center; gap:20px; }
+    .icon{ width:54px; height:54px; border-radius:18px; background:rgba(255,255,255,0.04); 
+      display:grid; place-items:center; font-size:22px; border:1px solid rgba(255,255,255,0.05); }
+    .info{ flex:1; }
+    .title{ display:block; font-weight:800; font-size:15px; letter-spacing:0.5px; margin-bottom:4px; }
+    .desc{ font-size:12px; color:var(--muted); font-weight:500; line-height:1.4; }
+    .chev{ font-size:20px; opacity:0.2; font-weight:300; }
+
+    .foot{ margin-top:60px; text-align:center; font-size:10px; font-weight:800; letter-spacing:6px; opacity:0.2; }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="head">
+      <div class="chip" id="chipStatus">VERIFICANDO STATUS...</div>
+      <h1 class="logo">GESTÃO<span>INTELIGENTE</span></h1>
+      <div class="tagline">DELTA BIOCOMBUSTIVEIS</div>
+    </div>
+
+    <div class="grid">
+      <a href="veiculos.html" class="card-btn">
+        <div class="inner">
+          <div class="icon">🚗</div>
+          <div class="info">
+            <span class="title">CONTROLE DE VEÍCULOS</span>
+            <p class="desc">Acessar entrada e saída de frota</p>
+          </div>
+          <div class="chev">›</div>
+        </div>
+      </a>
+
+      <a href="visitantes.html" class="card-btn">
+        <div class="inner">
+          <div class="icon">🛂</div>
+          <div class="info">
+            <span class="title">CONTROLE DE VISITANTES</span>
+            <p class="desc">Check‑in/out e relatórios</p>
+          </div>
+          <div class="chev">›</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="foot">by ULBACH</div>
+  </div>
+
+  <script>
+    // Script simples apenas para manter o indicador visual de Online
+    async function checkStatus() {
+      const el = document.getElementById('chipStatus');
+      try {
+        // Usando a URL que você já tinha no modelo
+        const res = await fetch('https://script.google.com/macros/s/AKfycby5uc_kNB_oGOO7ydctorkaWfsEljjXFZM3zq8MW6rYPW4mSthLfPoIPrOKGZ6E6rJBmw/exec?route=home');
+        if (res.ok) {
+          el.style.color = '#86efac';
+          el.innerHTML = '● ONLINE';
+        }
+      } catch (e) {
+        el.innerHTML = '● OFFLINE';
+      }
+    }
+    checkStatus();
+  </script>
+</body>
+
+</html>

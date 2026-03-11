@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Saída Visitante — Delta</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{ 
+      --bg1:#061427; --bg2:#0b1b33; 
+      --card:rgba(255,255,255,0.06); 
+      --border:rgba(255,255,255,0.12); 
+      --text-main:#e6edf7; --text-soft:#9fb4d3; --text-muted:#7b8ca7; 
+      --red:#ef4444; --green:#22c55e; --blue:#3b82f6;
+      --radius:20px;
+    }
+    *{ box-sizing: border-box; }
+    body{ 
+      margin:0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+      background:linear-gradient(180deg,var(--bg1),var(--bg2)); 
+      color:var(--text-main); min-height:100vh; padding:0; 
+      display:flex; flex-direction: column; align-items:center;
+    }
+
+    /* Cabeçalho Melhorado */
+    .header-top {
+      width: 100%;
+      padding: 40px 20px 20px;
+      text-align: center;
+      background: linear-gradient(to bottom, rgba(59, 130, 246, 0.1), transparent);
+    }
+    .header-top i {
+      font-size: 32px;
+      color: var(--blue);
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+    }
+    .header-top h2 { 
+      margin: 0; 
+      font-size: 26px; 
+      font-weight: 800; 
+      letter-spacing: -0.5px;
+    }
+    .header-top p { 
+      color: var(--text-soft); 
+      font-size: 13px; 
+      margin: 5px 0 0; 
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+
+    .container{ width:100%; max-width:450px; padding: 20px; flex: 1; }
+    
+    #lista_ativos{ display:grid; gap:14px; margin-top: 10px; }
+    
+    /* Card de Visitante */
+    .visitante-item{ 
+      background:var(--card); 
+      border:1px solid var(--border); 
+      padding:20px; 
+      border-radius:var(--radius); 
+      display:flex; 
+      align-items:center; 
+      justify-content:space-between; 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      cursor:pointer;
+      backdrop-filter: blur(5px);
+    }
+    .visitante-item:hover{ 
+      border-color: var(--red); 
+      background: rgba(239, 68, 68, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    
+    .info b{ display:block; font-size:16px; text-transform:uppercase; margin-bottom:4px; color: #fff; }
+    .info span{ 
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px; 
+      color: var(--text-muted); 
+      font-weight: 700; 
+    }
+    
+    .btn-out-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--red);
+      transition: 0.3s;
+    }
+    .visitante-item:hover .btn-out-circle {
+      background: var(--red);
+      color: white;
+      transform: rotate(90deg);
+    }
+
+    /* Feedback de Saída */
+    .leaving { opacity: 0; transform: translateX(30px); pointer-events: none; }
+    
+    #msg_status{ text-align:center; font-size:13px; margin-top:20px; font-weight:600; min-height:1.5em; }
+
+    /* Botão de Rodapé Estilizado */
+    .footer-action {
+      padding: 30px 20px;
+      width: 100%;
+      max-width: 450px;
+    }
+    .btn-back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      transition: 0.3s;
+    }
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: var(--blue);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-top">
+    <i class="fa-solid fa-person-walking-arrow-right"></i>
+    <h2>Saída de Visitantes</h2>
+    <p>DELTA BIOCOMBUSTIVEIS</p>
+  </div>
+
+  <div class="container">
+    <div id="lista_ativos">
+      <div style="text-align:center; padding:40px; opacity:0.5;">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <span style="display:block; margin-top:10px; font-size:12px">Sincronizando com a portaria...</span>
+      </div>
+    </div>
+    <div id="msg_status"></div>
+  </div>
+
+  <div class="footer-action">
+    <a href="visitantes.html" class="btn-back">
+      <i class="fa-solid fa-chevron-left"></i>
+      Voltar ao Menu Principal
+    </a>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycby5uc_kNB_oGOO7ydctorkaWfsEljjXFZM3zq8MW6rYPW4mSthLfPoIPrOKGZ6E6rJBmw/exec';
+    let cacheVisitantes = [];
+
+    function jsonp(url) {
+      return new Promise((resolve) => {
+        const cb = 'cb_' + Math.round(100000 * Math.random());
+        const script = document.createElement('script');
+        script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + cb;
+        window[cb] = (data) => { delete window[cb]; document.body.removeChild(script); resolve(data); };
+        document.body.appendChild(script);
+      });
+    }
+
+    async function carregarAtivos() {
+      const container = document.getElementById('lista_ativos');
+      try {
+        const res = await jsonp(API_URL + '?route=getVisitantesData');
+        cacheVisitantes = (res.visitantes || []).filter(v => v.status === "EM VISITA");
+        renderizarLista();
+      } catch (e) {
+        container.innerHTML = `<div style="color:var(--red); text-align:center; padding:20px;">Falha na conexão com o servidor.</div>`;
+      }
+    }
+
+    function renderizarLista() {
+      const container = document.getElementById('lista_ativos');
+      if (cacheVisitantes.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:60px; color:var(--text-muted); font-size:14px;">
+          <i class="fa-solid fa-check-circle" style="font-size:30px; margin-bottom:10px; opacity:0.3"></i><br>
+          Nenhum visitante ativo.
+        </div>`;
+        return;
+      }
+      container.innerHTML = cacheVisitantes.map(v => `
+        <div class="visitante-item" id="item-${v.linha}" onclick="darBaixa(${v.linha}, '${v.nome}')">
+          <div class="info">
+            <b>${v.nome}</b>
+            <span><i class="fa-solid fa-id-card"></i> CPF: ${v.cpf}</span>
+          </div>
+          <div class="btn-out-circle">
+            <i class="fa-solid fa-door-open"></i>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function darBaixa(linha, nome) {
+      if(!confirm(`Registrar saída definitiva de ${nome}?`)) return;
+      
+      const item = document.getElementById(`item-${linha}`);
+      const msg = document.getElementById('msg_status');
+
+      item.classList.add('leaving');
+      msg.style.color = "var(--green)";
+      msg.innerText = `Registrando baixa no sistema...`;
+
+      try {
+        const dados = { linha: linha, tipo: 'SAIDA' };
+        const res = await jsonp(API_URL + '?route=salvarVisitante&data=' + encodeURIComponent(JSON.stringify(dados)));
+        
+        if(res.ok) {
+          msg.innerText = `Saída confirmada com sucesso!`;
+          cacheVisitantes = cacheVisitantes.filter(v => v.linha !== linha);
+          setTimeout(() => {
+            item.remove();
+            if(cacheVisitantes.length === 0) renderizarLista();
+            msg.innerText = "";
+          }, 450);
+        }
+      } catch(e) {
+        item.classList.remove('leaving');
+        msg.style.color = "var(--red)";
+        msg.innerText = "Erro ao processar. Tente novamente.";
+      }
+    }
+
+    window.onload = carregarAtivos;
+  </script>
+</body>
+</html>

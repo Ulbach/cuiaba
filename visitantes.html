@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Frota Pro — Gestão de Visitantes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { 
+      --bg1: #061427; --bg2: #0b1b33; 
+      --card: rgba(255, 255, 255, 0.06); 
+      --border: rgba(255, 255, 255, 0.12); 
+      --text-main: #e6edf7; --text-soft: #9fb4d3; 
+      --blue: #3b82f6; --green: #22c55e; --red: #ef4444; 
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body { 
+      margin: 0; font-family: system-ui, -apple-system, sans-serif; 
+      background: linear-gradient(180deg, var(--bg1), var(--bg2)); 
+      color: var(--text-main); min-height: 100vh; 
+      display: flex; flex-direction: column; align-items: center; 
+    }
+
+    /* CABEÇALHO COM IMAGEM */
+    .hero-header {
+      width: 100%;
+      height: 220px;
+      background: linear-gradient(180deg, rgba(6, 20, 39, 0.4) 0%, var(--bg1) 100%), 
+                  url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1600');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .hero-header .badge {
+      background: var(--blue);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+
+    .hero-header h2 { 
+      margin: 0; font-size: 32px; font-weight: 900; color: #fff; 
+      text-transform: uppercase; text-shadow: 2px 4px 15px rgba(0,0,0,0.8);
+    }
+
+    .hero-header p { margin: 8px 0 0; font-size: 12px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 4px; }
+
+    /* CARD E BOTÕES PRINCIPAIS */
+    .card { 
+      width: 90%; max-width: 400px; background: var(--card); 
+      border: 1px solid var(--border); border-radius: 24px; padding: 30px; 
+      text-align: center; backdrop-filter: blur(10px); 
+    }
+
+    .menu-grid { display: grid; gap: 15px; }
+    
+    .btn-nav { 
+      display: flex; align-items: center; justify-content: center; gap: 15px; padding: 22px; border-radius: 18px; 
+      text-decoration: none; color: #fff; font-weight: 700; font-size: 16px; transition: 0.3s; 
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .btn-entrada { background: rgba(34,197,94,0.1); border-color: var(--green); color: var(--green); }
+    .btn-entrada:hover { background: var(--green); color: #fff; transform: translateY(-3px); }
+    
+    .btn-saida { background: rgba(239,68,68,0.1); border-color: var(--red); color: var(--red); }
+    .btn-saida:hover { background: var(--red); color: #fff; transform: translateY(-3px); }
+    
+    /* NOVO BOTÃO DE VOLTAR REDONDO/AZUL */
+    .btn-back { 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 35px;
+      padding: 12px 25px;
+      background: rgba(59, 130, 246, 0.15); /* Azul translúcido */
+      color: var(--blue);
+      border: 1px solid var(--blue);
+      border-radius: 50px; /* Totalmente arredondado */
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-back:hover { 
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+      transform: scale(1.05);
+    }
+
+    .btn-back i { font-size: 14px; }
+
+  </style>
+</head>
+<body>
+
+  <div class="hero-header">
+    <div class="hero-content">
+      <span class="badge">Acesso Controlado</span>
+      <h2>Portaria Visitantes</h2>
+      <p>Delta Biocombustíveis</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="menu-grid">
+      <a href="Entrada_visitante.html" class="btn-nav btn-entrada">
+        <i class="fa-solid fa-user-plus"></i> REGISTRAR ENTRADA
+      </a>
+      <a href="Saida_visitante.html" class="btn-nav btn-saida">
+        <i class="fa-solid fa-user-minus"></i> REGISTRAR SAÍDA
+      </a>
+    </div>
+    
+    <a href="index.html" class="btn-back">
+      <i class="fa-solid fa-house"></i> Menu Principal
+    </a>
+  </div>
+
+</body>
+</html>

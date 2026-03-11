@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Frota Pro — Controle de Veículos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg1: #061427; --bg2: #0b1b33;
+      --card: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.12);
+      --text-main: #e6edf7; --text-soft: #9fb4d3;
+      --accent: #22c55e; --alert: #ef4444; --blue: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(180deg, var(--bg1), var(--bg2));
+      color: var(--text-main); min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .hero-header {
+      width: 100%; height: 180px;
+      background: url('https://images.unsplash.com/photo-1506015391300-4802dc74de2e?auto=format&fit=crop&q=80&w=1600') center/cover;
+      position: relative; display: flex; align-items: flex-end; padding: 25px;
+    }
+    .hero-header::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(0deg, var(--bg1) 0%, transparent 100%);
+    }
+    .hero-content { position: relative; z-index: 2; width: 100%; max-width: 500px; margin: 0 auto; }
+    .pill {
+      background: rgba(34, 197, 94, 0.15); color: var(--accent);
+      padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(34, 197, 94, 0.3);
+      display: inline-block; margin-bottom: 8px;
+    }
+    .main-container { width: 100%; max-width: 500px; padding: 20px; flex: 1; }
+    .action-grid { display: flex; gap: 15px; margin-bottom: 30px; }
+    .btn-action {
+      flex: 1; background: var(--card); border: 1px solid var(--border);
+      padding: 25px 15px; border-radius: 20px; text-decoration: none;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      transition: 0.3s;
+    }
+    .btn-action:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
+    .btn-action i { font-size: 32px; }
+    .btn-action span { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-main); }
+    .ico-saida { color: var(--alert); }
+    .ico-entrada { color: var(--accent); }
+    .section-title {
+      font-size: 13px; font-weight: 700; color: var(--text-soft);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
+    }
+    .list-wrap { display: flex; flex-direction: column; gap: 10px; }
+    .item {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 15px; border-radius: 20px; display: flex; align-items: center; gap: 15px;
+    }
+    .veh-ico {
+      width: 45px; height: 45px; background: rgba(255,255,255,0.05);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: var(--blue);
+    }
+    .item-main { flex: 1; }
+    .item-title { font-weight: 800; font-size: 15px; }
+    .item-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .status-tag { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; }
+    .tag-ok { background: rgba(34, 197, 94, 0.1); color: var(--accent); }
+    .tag-warn { background: rgba(239, 68, 68, 0.1); color: var(--alert); }
+    .btn-footer {
+      width: 100%; background: var(--card); border: 1px solid var(--border);
+      padding: 18px; border-radius: 20px; margin-top: 30px; margin-bottom: 40px;
+      color: var(--text-soft); text-decoration: none; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero-header">
+    <div class="hero-content">
+      <div class="pill" id="pillStatus">Sincronizando...</div>
+      <h1 style="margin:0; font-size:28px; font-weight:900;">Controle de Frota</h1>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="action-grid">
+      <a href="saida.html" class="btn-action">
+        <i class="fa-solid fa-truck-arrow-right ico-saida"></i>
+        <span>Registro Saída</span>
+      </a>
+      <a href="entrada.html" class="btn-action">
+        <i class="fa-solid fa-truck-ramp-box ico-entrada"></i>
+        <span>Registro Entrada</span>
+      </a>
+    </div>
+
+    <div class="section-title">Últimas 5 Movimentações</div>
+
+    <div id="listaRecentes" class="list-wrap">
+      <div style="text-align:center; padding:40px; color:var(--text-soft);">
+        <i class="fa-solid fa-circle-notch fa-spin"></i><br>Buscando dados...
+      </div>
+    </div>
+
+    <a href="index.html" class="btn-footer">
+      <i class="fa-solid fa-chevron-left"></i> Voltar ao Início
+    </a>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycby5uc_kNB_oGOO7ydctorkaWfsEljjXFZM3zq8MW6rYPW4mSthLfPoIPrOKGZ6E6rJBmw/exec';
+    let carregando = false;
+
+    function jsonp(url) {
+      return new Promise((resolve, reject) => {
+        const cb = 'cb_' + Math.round(Math.random() * 1000000);
+        const script = document.createElement('script');
+        script.src = `${url}${url.indexOf('?') >= 0 ? '&' : '?'}callback=${cb}`;
+        window[cb] = (data) => {
+          try { delete window[cb]; } catch (_) { window[cb] = undefined; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+          resolve(data);
+        };
+        script.onerror = () => {
+          try { delete window[cb]; } catch (_) { window[cb] = undefined; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+          reject(new Error('Erro de conexão'));
+        };
+        document.head.appendChild(script);
+      });
+    }
+
+    function esc(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderRecentes(lista) {
+      const wrap = document.getElementById('listaRecentes');
+      const ultimos5 = (lista || []).slice(0, 5);
+
+      if (!ultimos5.length) {
+        wrap.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-soft);">Nenhuma movimentação encontrada.</div>';
+        return;
+      }
+
+      const html = ultimos5.map(it => {
+        const status = String(it.status || '').toUpperCase();
+        const isOk = status.includes('PÁTIO') || status.includes('ENTRADA') || status.includes('CONCLUÍDO');
+
+        return `
+          <div class="item">
+            <div class="veh-ico"><i class="fa-solid fa-truck-front"></i></div>
+            <div class="item-main">
+              <div class="item-title">${esc((it.veiculo || 'N/A').toUpperCase())}</div>
+              <div class="item-sub">${esc(it.motorista || '---')} | ${esc(it.dataHora || '---')}</div>
+            </div>
+            <div class="status-tag ${isOk ? 'tag-ok' : 'tag-warn'}">${esc(status || '---')}</div>
+          </div>`;
+      }).join('');
+
+      wrap.innerHTML = html;
+    }
+
+    async function carregarDados() {
+      if (carregando) return;
+      carregando = true;
+
+      const pill = document.getElementById('pillStatus');
+
+      try {
+        const res = await jsonp(`${API_URL}?route=homeFast&t=${Date.now()}`);
+        if (!res || res.ok === false) throw new Error(res && res.message ? res.message : 'Falha ao carregar');
+
+        renderRecentes(res.recentes || []);
+        pill.innerText = 'Sincronizado';
+        pill.style.background = 'rgba(34, 197, 94, 0.15)';
+      } catch (e) {
+        document.getElementById('listaRecentes').innerHTML =
+          '<div style="text-align:center; padding:30px; color:var(--text-soft);">Erro ao carregar dados.</div>';
+        pill.innerText = 'Offline';
+        pill.style.background = 'rgba(239, 68, 68, 0.15)';
+      } finally {
+        carregando = false;
+      }
+    }
+
+    window.onload = carregarDados;
+  </script>
+</body>
+</html>
